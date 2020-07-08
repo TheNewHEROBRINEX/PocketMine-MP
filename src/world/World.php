@@ -1908,8 +1908,7 @@ class World implements ChunkManager{
 			return;
 		}
 
-		$chunk->setX($chunkX);
-		$chunk->setZ($chunkZ);
+		$chunk->setPos(new ChunkPos($chunkX, $chunkZ));
 
 		$chunkHash = World::chunkHash($chunkX, $chunkZ);
 		$oldChunk = $this->getChunk($chunkX, $chunkZ, false);
@@ -2114,7 +2113,7 @@ class World implements ChunkManager{
 		}
 
 		if($chunk === null and $create){
-			$chunk = new Chunk($x, $z);
+			$chunk = new Chunk(new ChunkPos($x, $z));
 		}
 
 		$this->timings->syncChunkLoadDataTimer->stopTiming();
