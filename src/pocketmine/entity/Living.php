@@ -442,12 +442,6 @@ abstract class Living extends Entity implements Damageable{
 	 * to effects or armour.
 	 */
 	public function applyDamageModifiers(EntityDamageEvent $source) : void{
-		if($this->lastDamageCause !== null and $this->attackTime > 0){
-			if($this->lastDamageCause->getBaseDamage() >= $source->getBaseDamage()){
-				$source->setCancelled();
-			}
-			$source->setModifier(-$this->lastDamageCause->getBaseDamage(), EntityDamageEvent::MODIFIER_PREVIOUS_DAMAGE_COOLDOWN);
-		}
 		if($source->canBeReducedByArmor()){
 			//MCPE uses the same system as PC did pre-1.9
 			$source->setModifier(-$source->getFinalDamage() * $this->getArmorPoints() * 0.04, EntityDamageEvent::MODIFIER_ARMOR);
@@ -549,7 +543,21 @@ abstract class Living extends Entity implements Damageable{
 			$source->setKnockBack($base - min($base, $base * $this->getHighestArmorEnchantmentLevel(Enchantment::BLAST_PROTECTION) * 0.15));
 		}
 
-		parent::attack($source);
+		$source->call();
+		if($source->isCancelled()){
+			return;
+		}
+
+		if($this->lastDamageCause !== null and $this->attackTime > 0 and !$source->ignoresCooldown()){
+			if($this->lastDamageCause->getBaseDamage() >= $source->getBaseDamage()){
+				return;
+			}
+			$source->setModifier(-$this->lastDamageCause->getBaseDamage(), EntityDamageEvent::MODIFIER_PREVIOUS_DAMAGE_COOLDOWN);
+		}
+
+		$this->setLastDamageCause($source);
+
+		$this->setHealth($this->getHealth() - $source->getFinalDamage());
 
 		if($source->isCancelled()){
 			return;

@@ -67,6 +67,8 @@ class EntityDamageEvent extends EntityEvent implements Cancellable{
 	private $baseDamage;
 	/** @var float */
 	private $originalBase;
+	/** @var bool */
+	private $ignoreCooldown;
 
 	/** @var float[] */
 	private $modifiers;
@@ -79,13 +81,14 @@ class EntityDamageEvent extends EntityEvent implements Cancellable{
 	/**
 	 * @param float[] $modifiers
 	 */
-	public function __construct(Entity $entity, int $cause, float $damage, array $modifiers = []){
+	public function __construct(Entity $entity, int $cause, float $damage, array $modifiers = [], bool $ignoreCooldown = false){
 		$this->entity = $entity;
 		$this->cause = $cause;
 		$this->baseDamage = $this->originalBase = $damage;
 
 		$this->modifiers = $modifiers;
 		$this->originals = $this->modifiers;
+		$this->ignoreCooldown = $ignoreCooldown;
 	}
 
 	public function getCause() : int{
@@ -113,6 +116,20 @@ class EntityDamageEvent extends EntityEvent implements Cancellable{
 	 */
 	public function getOriginalBaseDamage() : float{
 		return $this->originalBase;
+	}
+
+	/**
+	 * Returns whether or not damage should be dealt regardless of attack cooldown
+	 */
+	public function ignoresCooldown() : bool{
+		return $this->ignoreCooldown;
+	}
+
+	/**
+	 * Specifies whether or not damage should be dealt regardless of attack cooldown
+	 */
+	public function setIgnoreCooldown(bool $ignoreCooldown) : void{
+		$this->ignoreCooldown = $ignoreCooldown;
 	}
 
 	/**
