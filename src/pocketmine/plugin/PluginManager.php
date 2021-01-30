@@ -65,7 +65,11 @@ use function shuffle;
 use function stripos;
 use function strpos;
 use function strtolower;
+use function version_compare;
 use const DIRECTORY_SEPARATOR;
+use const PHP_MAJOR_VERSION;
+use const PHP_MINOR_VERSION;
+use const PHP_VERSION;
 
 /**
  * Manages all the plugins
@@ -270,9 +274,7 @@ class PluginManager{
 					}
 
 					$pluginPhpVersions = $description->getCompatiblePhpVersions();
-					$pluginCompatiblePhpVersions = array_filter($pluginPhpVersions, function(string $requiredVersion) : bool{
-						return version_compare(PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION, $requiredVersion, "<=") and version_compare(PHP_VERSION, $requiredVersion, ">=") and version_compare(PHP_MAJOR_VERSION . "." . (PHP_MINOR_VERSION + 1), $requiredVersion, ">");
-					});
+					$pluginCompatiblePhpVersions = array_filter($pluginPhpVersions, [self::class, "isCompatiblePhp"]);
 					if(count($pluginPhpVersions) > 0 and count($pluginCompatiblePhpVersions) < 1){
 						$this->server->getLogger()->error($this->server->getLanguage()->translateString("pocketmine.plugin.loadError", [
 							$name,
@@ -414,6 +416,13 @@ class PluginManager{
 		}
 
 		return false;
+	}
+
+	/**
+	 *  Returns whether a specified PHP version string is considered compatible with the server's PHP version.
+	 */
+	public static function isCompatiblePhp(string $requiredVersion) : bool{
+		return version_compare(PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION, $requiredVersion, "<=") and version_compare(PHP_VERSION, $requiredVersion, ">=") and version_compare(PHP_MAJOR_VERSION . "." . (PHP_MINOR_VERSION + 1), $requiredVersion, ">");
 	}
 
 	/**
